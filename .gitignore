@@ -1,2 +1,5 @@
 # Ignore Lab1/connection_graph.csv file
 Lab1/connection_graph.csv
+
+# Ignore Python cache folders
+__pycache__/
