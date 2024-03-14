@@ -1,5 +1,5 @@
 import pandas as pd
-import datetime
+from datetime import datetime
 from classes import Route
 
 filename = "connection_graph.csv"
@@ -29,13 +29,30 @@ def read_data():
     data.rename(columns={data.columns[0]: "id"}, inplace=True)
     return data
 
+#fix night courses times after midnight having >24h format
+def fix_time_after_midnight(date_str: str):
+    hour = int(date_str[:2])
+    if (hour >= 24):
+        hour -= 24
+        date_str = str(hour) + date_str[2:]
+    return date_str
+
+def date_str_to_datetime(date_str: str):
+    day_datetime = datetime.strptime(date, date_format)
+    
+    date_str = fix_time_after_midnight(date_str)
+    time_datetime = datetime.strptime(date_str, time_format).time()
+    
+    day_time_datetime = datetime.combine(day_datetime, time_datetime)
+    return day_time_datetime
+
 
 def data_row_to_route_tuple(row):
     route = Route(
         company=row["company"], 
         line=row["line"], 
-        departure_time=row["departure_time"],
-        arrival_time=row["arrival_time"],
+        departure_time=date_str_to_datetime(row["departure_time"]),
+        arrival_time=date_str_to_datetime(row["arrival_time"]),
         start_stop=row["start_stop"],
         start_stop_lat=row["start_stop_lat"],
         start_stop_lon=row["start_stop_lon"],

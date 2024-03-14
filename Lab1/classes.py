@@ -26,7 +26,7 @@ class Route:
         self.endStop = Stop(kwargs["end_stop"], kwargs["end_stop_lat"], kwargs["end_stop_lon"])
         
     def __str__(self):
-        return f"Line {self.line}, from {self.startStop.name} to {self.endStop.name}"
+        return f"Line {self.line}, from {self.startStop.name} to {self.endStop.name}, at {self.departureTime}"
 
 
 if __name__ == "__main__":
