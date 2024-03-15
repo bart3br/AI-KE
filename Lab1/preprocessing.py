@@ -24,7 +24,7 @@ time_format = "%H:%M:%S"
 
 
 def read_data():
-    data = pd.read_csv("connection_graph.csv", dtype=col_types)
+    data = pd.read_csv(filename, dtype=col_types)
     #add missing id column name
     data.rename(columns={data.columns[0]: "id"}, inplace=True)
     return data
@@ -38,16 +38,18 @@ def fix_time_after_midnight(date_str: str):
     return date_str
 
 def date_str_to_datetime(date_str: str):
-    day_datetime = datetime.strptime(date, date_format)
+    # day_datetime = datetime.strptime(date, date_format)
     
     date_str = fix_time_after_midnight(date_str)
     time_datetime = datetime.strptime(date_str, time_format).time()
     
-    day_time_datetime = datetime.combine(day_datetime, time_datetime)
-    return day_time_datetime
+    # day_time_datetime = datetime.combine(day_datetime, time_datetime)
+    # return day_time_datetime
+    
+    return time_datetime
 
 
-def data_row_to_route_tuple(row):
+def data_row_to_route_tuple(row) -> tuple:
     route = Route(
         company=row["company"], 
         line=row["line"], 
@@ -62,7 +64,7 @@ def data_row_to_route_tuple(row):
     )
     return (row["id"], route)
 
-def preprocess(data: pd.DataFrame) -> dict:
+def dataframe_to_dict(data: pd.DataFrame) -> dict:
     dictionary = {}
     
     for index, row in data.iterrows():
@@ -71,15 +73,12 @@ def preprocess(data: pd.DataFrame) -> dict:
     
     return dictionary
 
-def temp():
+def preprocess():
     data = read_data()
-    dictionary = preprocess(data)
-    for key, value in dictionary.items():
-        print (key, value)
+    dictionary = dataframe_to_dict(data)
+    return dictionary
     
 
 
 if __name__ == "__main__":
-    data = pd.read_csv('connection_graph.csv', dtype=col_types)
-    print(data.head(10))
-    temp()
+    pass

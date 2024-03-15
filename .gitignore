@@ -3,3 +3,6 @@ Lab1/connection_graph.csv
 
 # Ignore Python cache folders
 __pycache__/
+
+# Ignore .pdf files
+*.pdf
