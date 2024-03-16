@@ -38,15 +38,15 @@ def fix_time_after_midnight(date_str: str):
     return date_str
 
 def date_str_to_datetime(date_str: str):
-    # day_datetime = datetime.strptime(date, date_format)
+    day_datetime = datetime.strptime(date, date_format)
     
     date_str = fix_time_after_midnight(date_str)
     time_datetime = datetime.strptime(date_str, time_format).time()
     
-    # day_time_datetime = datetime.combine(day_datetime, time_datetime)
-    # return day_time_datetime
+    day_time_datetime = datetime.combine(day_datetime, time_datetime)
+    return day_time_datetime
     
-    return time_datetime
+    # return time_datetime
 
 
 def data_row_to_route_tuple(row) -> tuple:
