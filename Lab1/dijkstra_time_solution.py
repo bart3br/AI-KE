@@ -1,6 +1,6 @@
 from classes import Route
 import sys
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import copy
 
 # temp imports
@@ -11,28 +11,20 @@ import cli_input
 seconds_to_change = 60.0
 
 def dijkstra_time_factor_algorithm(routes: dict, start_stop: str, end_stop: str, start_time: datetime) -> list:
-    curr_time = copy.copy(start_time)
-    
-    # 'Q' set of graph nodes (stops) with key=stopName, value=tuple(cost, route from parent)
+    # set of all graph nodes (stops) with key=stopName, value=tuple(cost, route from parent)
     stops = create_stops_dictionary(routes, start_stop)
+    
+    # 'Q' set of graph nodes (stops) used for algorithm to choose current minimal cost nodes
     stops_queue = copy.deepcopy(stops)
-    # set of visited nodes (stops) with key=stopName, value=tuple(cost, route from parent)
+    
+    # set of visited nodes (stops)
     visited_stops = {}
-
-    # temp = stops[start_stop]
-    # print(f"{temp[0]} and {temp[1].__str__()}")
     
     #while stops (Q) not empty
     while stops_queue:
-        # find stop with min value from stops
+        # find stop with min value from stops queue
         curr_stop = find_min_value_stop_key(stops_queue)
-
-        # if current stop has a parent route, take it's arrivalTime as current time
-        if (stops_queue[curr_stop][1] is not None):
-            curr_time = (stops_queue[curr_stop][1]).arrivalTime
-        print(curr_time)
-
-        find_and_update_stop_neighbours(routes, stops, stops_queue, curr_stop, curr_time)
+        find_and_update_stop_neighbours(routes, stops, stops_queue, curr_stop, start_time)
         # add current stop to visited stops
         visited_stops[curr_stop] = stops_queue.get(curr_stop)
         # delete current stop from stops
@@ -56,61 +48,64 @@ def find_min_value_stop_key(stops: dict) -> str:
 
 # find all neighbours of stop according to routes from this stop to neighbours after current time
 # and update their values (cost) and parents
-def find_and_update_stop_neighbours(routes: dict, stops: dict, stops_queue: dict, curr_stop: str, curr_time: datetime) -> None:
+def find_and_update_stop_neighbours(routes: dict, stops: dict, stops_queue: dict, curr_stop: str, start_time: datetime) -> None:
     for key, route in routes.items():
         # check if route's startStop is the current stop and if it's possible to change due to current time
-        if (route.startStop.name == curr_stop and is_route_departure_time_not_too_late(route, curr_time)):
-            stops[route.endStop.name] = update_value_and_parent_for_stop(route, stops, curr_stop, route.endStop.name)
+        if (route.startStop.name == curr_stop and is_route_departure_time_valid(stops, curr_stop, route, start_time)):
+            stops[route.endStop.name] = update_value_and_parent_for_stop(route, stops, start_time)
             if (route.endStop.name in stops_queue):
-                stops_queue[route.endStop.name] = stops[route.endStop.name]
+                stops_queue[route.endStop.name] = copy.copy(stops[route.endStop.name])
 
 
-def is_route_departure_time_not_too_late(route: Route, time: datetime) -> bool:
-    time_delta = (route.departureTime - time).total_seconds()
-    return time_delta >= 0.0
+# checking if route departure time from current stop is not earlier than arrival to current stop
+# and can be taken into consideration when updating optimal routes
+def is_route_departure_time_valid(stops: dict, curr_stop: str, route: Route, start_time: datetime) -> bool:
+    curr_stop_cost_seconds = (stops.get(curr_stop))[0]
+    # TODO
+    if (curr_stop_cost_seconds == float('inf')):
+        return False
+    curr_stop_arrival_time = start_time + timedelta(seconds=curr_stop_cost_seconds)
+    return route.departureTime >= curr_stop_arrival_time
 
+# TODO not working properly, traveling back in time
 # counting new value to get from current to neighbour stop and assigning new parent if needed
-def update_value_and_parent_for_stop(route: Route, stops: dict, curr_stop: str, neighbour_stop: str) -> tuple:
+def update_value_and_parent_for_stop(route: Route, stops: dict, start_time: datetime) -> tuple:
+    curr_stop = route.startStop.name
+    neighbour_stop = route.endStop.name
+    
     curr_stop_tup = stops.get(curr_stop)
-    # if (neighbour_stop in stops):
-    #     print("neighbour exists, ", neighbour_stop)
-    # else:
-    #     print("neighbour DOESNT exist, ", neighbour_stop)
     neigbour_stop_tup = stops.get(neighbour_stop)
 
-    # if (neighbour_stop == "Kwiska"):
-    #     print("WRACA NA KWISKA")
+    curr_stop_arrival_cost = curr_stop_tup[0] # d(u)
+    neighbour_stop_arrival_cost = neigbour_stop_tup[0] # d(v)
 
-    # if neigbour_stop_tup is None:
-    #     print(f"TU SIE WYPIERDALA: current_stop = {curr_stop}, neighbour_stop = {neighbour_stop}")
-    #     print(f"route = {route.__str__()}, current_stop_tuple = ({curr_stop_tup[0]}, {curr_stop_tup[1].__str__()}")
+    curr_to_neighbour_cost = count_waiting_and_route_journey_time_cost(route, stops, start_time) # w(u,v)
 
-    # if (neighbour_stop == "Kwiska"):
-    #     return (float('inf'), None)
-
-    curr_stop_value = curr_stop_tup[0] # d(u)
-    neighbour_stop_value = neigbour_stop_tup[0] # d(v)
-    curr_to_neighbour_value = route.journey_time_seconds() # w(u,v)
-
-    # if new value is lower than previous, change parent to current node and update value, else return unchanged values
-    new_value = curr_stop_value + curr_to_neighbour_value
-    if (neighbour_stop_value > new_value):
-        return (new_value, route)
+    # if new cost is lower than previous, change parent to current route and update cost, else return unchanged values
+    if (neighbour_stop_arrival_cost > curr_stop_arrival_cost + curr_to_neighbour_cost):
+        return (curr_to_neighbour_cost, route)
     else:
         return neigbour_stop_tup
+
+# returns time in seconds from arrival to current stop (current stop cost)
+# to arrival to neighbour stop (waiting for route start time + route time)
+def count_waiting_and_route_journey_time_cost(route: Route, stops: dict, start_time: datetime) -> float:
+    curr_stop = route.startStop.name
+    curr_stop_cost_seconds = (stops.get(curr_stop))[0]
+    
+    curr_time = start_time + timedelta(seconds=curr_stop_cost_seconds)
+    return (route.arrivalTime - curr_time).total_seconds()
 
 # after getting through dijkstra algorithm find the optimal path from end stop to start stop
 def find_optimal_path_in_visited_stops(visited_stops: dict, start_stop: str, end_stop: str) -> list:
     path = []
     curr_stop = visited_stops[end_stop]
     parent_route = curr_stop[1] # route from parent to current stop
-    # print(curr_stop[1].__str__())
 
     while parent_route is not None:
         path.append(parent_route)
         curr_stop = visited_stops[parent_route.startStop.name]
         parent_route = curr_stop[1]
-        # print(curr_stop[1].__str__())
     
     return reversed(path)
 
@@ -121,21 +116,14 @@ if __name__ == "__main__":
     date = "01.03.2023"
     date_format = "%d.%m.%Y"
     time_format = "%H:%M:%S"
+    
     day_datetime = datetime.strptime(date, date_format)
-    date_str = "10:05:00"
-    time_datetime = datetime.strptime(date_str, time_format).time()
+    hour_datetime = datetime.strptime(input[3], time_format).time()
 
-    time_temp = datetime.combine(day_datetime, time_datetime)
-    print(time_temp)
+    start_time = datetime.combine(day_datetime, hour_datetime)
+    print(start_time)
 
-    # for key, route in routes.items():
-    #     if (route.line == "3"):
-    #         if (route.endStop.name == "DH Astra"):
-    #             print(route.__str__())
-    #for key, route in routes.items():
-
-
-    solution = dijkstra_time_factor_algorithm(routes, input[0], input[1], time_temp)
+    solution = dijkstra_time_factor_algorithm(routes, input[0], input[1], start_time)
     for route in solution:
         print(route)
     
