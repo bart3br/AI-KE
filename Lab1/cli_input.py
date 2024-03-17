@@ -9,7 +9,7 @@ def cli_load_data(filename: str) -> None:
         
 def cli_user_input() -> tuple:
     print("\nData loaded successfully.")
-    print("Data contains timetable of Wrocław's public transport on March 10, 2023.")
+    print("Data contains timetable of Wrocław's public transport on March 01, 2023.")
     print(" - Enter start destination: ")
     start = input()
     print(" - Enter end destination: ")
