@@ -1,10 +1,12 @@
 import time
 from classes import Route
 
-def cli_load_data(filename: str) -> None:
+def cli_load_data(filename: str, event) -> None:
     print("Loading data from " + filename + "...")
-    while True:
-        print("Loading...")
+    timer = 0
+    while not event.is_set():
+        print(f"Loading... ({timer}s)")
+        timer += 5
         time.sleep(5)
         
 def cli_user_input() -> tuple:

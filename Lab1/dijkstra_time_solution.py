@@ -4,9 +4,11 @@ import copy
 # temp imports
 from preprocessing import preprocess
 import cli_input
+import threading
+from queue import Queue
 
 # time in seconds needed to change to another line during journey
-seconds_to_change = 60.0
+cost_of_line_change = 30.0
 
 def dijkstra_time_factor_algorithm(routes: dict, start_stop: str, end_stop: str, start_time: datetime) -> tuple:
     # set of all graph nodes (stops)
@@ -20,11 +22,18 @@ def dijkstra_time_factor_algorithm(routes: dict, start_stop: str, end_stop: str,
     while stops_queue:
         # find stop with min value from stops queue
         curr_stop = find_min_value_stop_key(stops_queue, start_time)
+        #if current stop is end stop, then optimal path has been found, end algorithm
+        if (curr_stop == end_stop):
+            return finish_search(stops, end_stop, start_time)
+        
         find_and_update_stop_neighbours(routes, stops, stops_queue, curr_stop)
         # delete current stop from stops
         stops_queue.pop(curr_stop)
     
     # find optimal path and count total journey time            
+    return finish_search(stops, end_stop, start_time)
+
+def finish_search(stops, end_stop, start_time):
     journey = find_optimal_path_in_stops(stops, end_stop)
     journey_total_time = count_optimal_journey_total_time(stops, start_time, end_stop)   
     return (journey, journey_total_time)
@@ -67,7 +76,7 @@ def find_and_update_stop_neighbours(routes: dict, stops: dict, stops_queue: dict
 def is_route_departure_time_valid(stops: dict, route: Route) -> bool:
     curr_stop = route.startStop.name
     curr_stop_arrival_time = (stops.get(curr_stop))[0]   
-    return route.departureTime >= curr_stop_arrival_time
+    return route.departureTime >= curr_stop_arrival_time + timedelta(seconds=check_and_count_line_change_cost(stops, route))
 
 # counting new value to get from current to neighbour stop and assigning new parent if needed
 def update_value_and_parent_for_stop(route: Route, stops: dict) -> tuple:
@@ -94,6 +103,15 @@ def count_waiting_and_route_journey_time_cost(stops: dict, route: Route) -> floa
     curr_stop = route.startStop.name
     curr_stop_arrival_time: datetime = (stops.get(curr_stop))[0]
     return (route.arrivalTime - curr_stop_arrival_time).total_seconds()
+
+# check if there is about to be line change
+# and return the cost of change if line change happens
+def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
+    curr_stop = route.startStop.name
+    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
+    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
+        return 0.0 # there is no line change
+    return cost_of_line_change # there is line change
     
     
 
@@ -120,7 +138,20 @@ def count_optimal_journey_total_time(stops: dict, start_time: datetime, end_stop
     return f"{hours} h, {minutes} min, {seconds} s"
 
 if __name__ == "__main__":
-    routes = preprocess()
+    load_data_queue = Queue()
+    event = threading.Event()
+    data_loading_thread = threading.Thread(target=preprocess, args=(load_data_queue,event,))
+    loading_message_thread = threading.Thread(target=cli_input.cli_load_data, args=("connection_graph.csv",event,))
+    
+    data_loading_thread.start()
+    loading_message_thread.start()
+    
+    data_loading_thread.join()
+    routes = load_data_queue.get()
+    
+    loading_message_thread.join()
+    
+    # routes = preprocess()
     input = cli_input.cli_user_input()
 
     date = "01.03.2023"

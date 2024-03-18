@@ -64,7 +64,7 @@ def data_row_to_route_tuple(row) -> tuple:
     )
     return (row["id"], route)
 
-def dataframe_to_dict(data: pd.DataFrame) -> dict:
+def dataframe_to_route_dict(data: pd.DataFrame) -> dict:
     dictionary = {}
     
     for index, row in data.iterrows():
@@ -73,10 +73,21 @@ def dataframe_to_dict(data: pd.DataFrame) -> dict:
     
     return dictionary
 
-def preprocess():
+# def create_stops_graph(routes: dict) -> dict:
+#     stops_graph = {}
+#     for route in routes.values():
+#         stops_graph[route.startStop.name] = {}
+#         stops_graph[route.endStop.name] = {}
+    
+    
+#     return 
+
+def preprocess(result_queue, event):
     data = read_data()
-    dictionary = dataframe_to_dict(data)
-    return dictionary
+    dictionary = dataframe_to_route_dict(data)
+    result_queue.put(dictionary)
+    event.set()
+    # return dictionary
     
 
 
