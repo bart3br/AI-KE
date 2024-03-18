@@ -78,10 +78,10 @@ def add_route_to_stops_graph(stops_graph: dict, route: Route) -> None:
 def preprocess(result_queue, event):
     data = read_data()
     routes = dataframe_to_route_dict(data)
-    # stops_graph = create_stops_graph(routes)
+    stops_graph = create_stops_graph(routes)
 
-    result_queue.put(routes)
-    # result_queue.put(stops_graph)
+    # result_queue.put(routes)
+    result_queue.put(stops_graph)
     event.set()
     
 
