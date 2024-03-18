@@ -2,30 +2,10 @@ import pandas as pd
 from datetime import datetime
 from classes import Route
 from copy import copy
-
-filename = "connection_graph.csv"
-col_types = {
-    'id':int,
-    'company': str,
-    'line': str,
-    'departure_time': str,
-    'arrival_time': str,
-    'start_stop': str,
-    'end_stop': str,
-    'start_stop_lat': float,
-    'start_stop_lon': float,
-    'end_stop_lat': float,
-    'end_stop_lon': float
-}
-
-# data from connection_graph.csv file refers to 1st of March 2023
-date = "01.03.2023"
-date_format = "%d.%m.%Y"
-time_format = "%H:%M:%S"
-
+import constants
 
 def read_data():
-    data = pd.read_csv(filename, dtype=col_types)
+    data = pd.read_csv(constants.FILENAME, dtype=constants.COL_TYPES)
     #add missing id column name
     data.rename(columns={data.columns[0]: "id"}, inplace=True)
     return data
@@ -40,10 +20,10 @@ def fix_time_after_midnight(day_str: str, hour_str: str):
     return (day_str, hour_str)
 
 def date_str_to_datetime(hour_str: str):
-    time_tup = fix_time_after_midnight(copy(date), hour_str)
+    time_tup = fix_time_after_midnight(copy(constants.DATE), hour_str)
     
-    day_datetime = datetime.strptime(time_tup[0], date_format)
-    hour_datetime = datetime.strptime(time_tup[1], time_format).time()
+    day_datetime = datetime.strptime(time_tup[0], constants.DATE_FORMAT)
+    hour_datetime = datetime.strptime(time_tup[1], constants.TIME_FORMAT).time()
     
     day_hour_datetime = datetime.combine(day_datetime, hour_datetime)
     return day_hour_datetime
@@ -73,21 +53,36 @@ def dataframe_to_route_dict(data: pd.DataFrame) -> dict:
     
     return dictionary
 
-# def create_stops_graph(routes: dict) -> dict:
-#     stops_graph = {}
-#     for route in routes.values():
-#         stops_graph[route.startStop.name] = {}
-#         stops_graph[route.endStop.name] = {}
-    
-    
-#     return 
+# dictionary with (key= stop_name, value= dict(key= neighbour_stop_name, value= list_of_routes from stop_name to neighbour))
+def create_stops_graph(routes: dict) -> dict:
+    stops_graph = {}
+    for route in routes.values():
+        add_route_to_stops_graph(stops_graph, route)
+
+    return stops_graph
+
+def add_route_to_stops_graph(stops_graph: dict, route: Route) -> None:
+    curr_stop = route.startStop.name
+    neighbour_stop = route.endStop.name
+    if curr_stop in stops_graph:
+        connections: dict = stops_graph[curr_stop]
+        if neighbour_stop in connections:
+            connections[neighbour_stop].append(route)
+        else:
+            connections[neighbour_stop] = [route]
+    else:
+        stops_graph[curr_stop] = {neighbour_stop: [route]}
+
+
 
 def preprocess(result_queue, event):
     data = read_data()
-    dictionary = dataframe_to_route_dict(data)
-    result_queue.put(dictionary)
+    routes = dataframe_to_route_dict(data)
+    # stops_graph = create_stops_graph(routes)
+
+    result_queue.put(routes)
+    # result_queue.put(stops_graph)
     event.set()
-    # return dictionary
     
 
 

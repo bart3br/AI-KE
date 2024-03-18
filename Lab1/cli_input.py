@@ -1,13 +1,13 @@
 import time
 from classes import Route
 
-def cli_load_data(filename: str, event) -> None:
+def cli_load_data(filename: str, increment: int, event) -> None:
     print("Loading data from " + filename + "...")
     timer = 0
     while not event.is_set():
         print(f"Loading... ({timer}s)")
-        timer += 5
-        time.sleep(5)
+        timer += increment
+        time.sleep(increment)
         
 def cli_user_input() -> tuple:
     print("\nData loaded successfully.")

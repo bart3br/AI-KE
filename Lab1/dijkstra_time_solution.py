@@ -1,14 +1,7 @@
 from classes import Route
 from datetime import datetime, timedelta
 import copy
-# temp imports
-from preprocessing import preprocess
-import cli_input
-import threading
-from queue import Queue
-
-# time in seconds needed to change to another line during journey
-cost_of_line_change = 30.0
+import constants
 
 def dijkstra_time_factor_algorithm(routes: dict, start_stop: str, end_stop: str, start_time: datetime) -> tuple:
     # set of all graph nodes (stops)
@@ -111,7 +104,7 @@ def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
     route_to_curr_stop: Route = (stops.get(curr_stop))[1]
     if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
         return 0.0 # there is no line change
-    return cost_of_line_change # there is line change
+    return constants.COST_OF_THE_LINE_CHANGE # there is line change
     
     
 
@@ -138,33 +131,4 @@ def count_optimal_journey_total_time(stops: dict, start_time: datetime, end_stop
     return f"{hours} h, {minutes} min, {seconds} s"
 
 if __name__ == "__main__":
-    load_data_queue = Queue()
-    event = threading.Event()
-    data_loading_thread = threading.Thread(target=preprocess, args=(load_data_queue,event,))
-    loading_message_thread = threading.Thread(target=cli_input.cli_load_data, args=("connection_graph.csv",event,))
-    
-    data_loading_thread.start()
-    loading_message_thread.start()
-    
-    data_loading_thread.join()
-    routes = load_data_queue.get()
-    
-    loading_message_thread.join()
-    
-    # routes = preprocess()
-    input = cli_input.cli_user_input()
-
-    date = "01.03.2023"
-    date_format = "%d.%m.%Y"
-    time_format = "%H:%M:%S"
-    
-    day_datetime = datetime.strptime(date, date_format)
-    hour_datetime = datetime.strptime(input[3], time_format).time()
-
-    start_time = datetime.combine(day_datetime, hour_datetime)
-    print(start_time)
-
-    solution = dijkstra_time_factor_algorithm(routes, input[0], input[1], start_time)
-    for route in solution[0]:
-        print(route)
-    print(f"Total journey time: {solution[1]}")
+    pass
