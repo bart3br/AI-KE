@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from classes import Route
+from classes import Route, Stop
 from copy import copy
 import constants
 
@@ -74,14 +74,28 @@ def add_route_to_stops_graph(stops_graph: dict, route: Route) -> None:
         stops_graph[curr_stop] = {neighbour_stop: [route]}
 
 
+# count average speed of all vehicles considering every route
+# unit = degrees / days
+def count_avg_speed_of_all_routes(routes: dict) -> float:
+    total_distance = 0.0
+    total_time = 0.0
+    for route in routes.values():
+        curr_stop_obj: Stop = route.startStop
+        neighbour_stop_obj: Stop = route.endStop
+        total_distance += curr_stop_obj.euclidean_dist(neighbour_stop_obj)
+        total_time += route.journey_time_seconds()
+    total_time = total_time / constants.SECONDS_IN_ONE_DAY
+    return total_distance / total_time
 
 def preprocess(result_queue, event):
     data = read_data()
     routes = dataframe_to_route_dict(data)
     stops_graph = create_stops_graph(routes)
+    avg_speed = count_avg_speed_of_all_routes(routes)
 
     # result_queue.put(routes)
     result_queue.put(stops_graph)
+    result_queue.put(avg_speed)
     event.set()
     
 

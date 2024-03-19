@@ -6,6 +6,8 @@ DATE = "01.03.2023"
 DATE_FORMAT = "%d.%m.%Y"
 TIME_FORMAT = "%H:%M:%S"
 
+SECONDS_IN_ONE_DAY = 86400.0
+
 # column types for pandas to read data from .csv file properly
 COL_TYPES = {
     'id':int,

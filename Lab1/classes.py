@@ -11,6 +11,8 @@ class Stop:
     def __str__(self):
         return f"{self.name} at {self.lat}, {self.lon}"
     
+    # this approximation can be used due to all the coordinates being north-east
+    # and the points being within the same mid-sized city, so the Earth curvature doesn't matter
     def euclidean_dist(self, other: 'Stop'):
         return math.sqrt(math.pow(self.lat - other.lat, 2) + math.pow(self.lon - other.lon, 2))
 
