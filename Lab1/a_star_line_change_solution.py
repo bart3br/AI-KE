@@ -5,7 +5,7 @@ import constants
 from math import acos, pi
 
 
-def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime, avg_speed: float) -> tuple:
+def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime) -> tuple:
     # set of all graph nodes (stops)
     # with key=stopName, value=tuple(cost (number of line changes + heuristic), route from parent)
     stops = create_stops_dictionary(stops_graph, start_stop)
@@ -16,12 +16,12 @@ def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_
     #while stops (Q) not empty
     while stops_queue:
         # find stop with min value from stops queue
-        curr_stop = find_min_value_stop_key(stops_queue, start_time)
+        curr_stop = find_min_value_stop_key(stops_graph, stops_queue)
         #if current stop is end stop, then optimal path has been found, end algorithm
         if (curr_stop == end_stop):
             return finish_search(stops, end_stop, start_time)
         
-        find_and_update_stop_neighbours(stops_graph, stops, stops_queue, curr_stop, start_time, end_stop, avg_speed)
+        find_and_update_stop_neighbours(stops_graph, stops, stops_queue, curr_stop, start_time, end_stop)
         # delete current stop from stops
         stops_queue.pop(curr_stop)
                 
@@ -31,41 +31,41 @@ def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_
 # TODO zmienic nazwy zmiennych i dzialanie wywolywanych metod, musi liczyc przesiadki
 def finish_search(stops, end_stop, start_time):
     journey = find_optimal_path_in_stops(stops, end_stop)
-    journey_total_time = count_optimal_journey_total_time(stops, start_time, end_stop)   
-    return (journey, journey_total_time)
+    journey_line_changes = count_optimal_journey_total_time(stops, start_time, end_stop)   
+    return (journey, journey_line_changes)
 
-# create stops dictionary to store arrival times and routes to parents stops
+# create stops dictionary to store line change costs and routes to parents stops
 def create_stops_dictionary(stops_graph: dict, start_stop: str) -> dict:
     stops = {}
-    max_line_changes = len(stops_graph) * 2
+    max_line_changes = float(len(stops_graph) * 2)
     for stop_name in stops_graph.keys():
         stops[stop_name] = (max_line_changes, None)
     
-    stops[start_stop] = (0, None)
+    stops[start_stop] = (0.0, None)
     return stops
 
 # find candidate for next current stop
-def find_min_value_stop_key(stops: dict, start_time: datetime) -> str:
+def find_min_value_stop_key(stops_graph: dict, stops_queue: dict) -> str:
     earliest_key = None
-    max_datetime = start_time.replace(year= start_time.year+2)
-    earliest_datetime = max_datetime
+    max_line_changes = float(len(stops_graph) * 3)
+    least_line_changes = max_line_changes
 
-    for key, value in stops.items():
-        if value[0] < earliest_datetime:
-            earliest_datetime = value[0]
+    for key, value in stops_queue.items():
+        if value[0] < least_line_changes:
+            least_line_changes = value[0]
             earliest_key = key
 
     return earliest_key
 
 # find all neighbours of stop according to routes from this stop to neighbours after current time
 # and update their arrival times (cost) and parents
-def find_and_update_stop_neighbours(stops_graph: dict, stops: dict, stops_queue: dict, curr_stop: str, start_time: datetime, end_stop: str, avg_speed: float) -> None:
+def find_and_update_stop_neighbours(stops_graph: dict, stops: dict, stops_queue: dict, curr_stop: str, start_time: datetime, end_stop: str) -> None:
     connections_dict: dict = stops_graph.get(curr_stop)
     for routes_list in connections_dict.values():
         earliest_valid_route_indx = find_earliest_valid_route_indx(stops, routes_list, start_time)
         if (earliest_valid_route_indx != -1):
             earliest_valid_route = routes_list[earliest_valid_route_indx]
-            stops[earliest_valid_route.endStop.name] = update_value_and_parent_for_stop(stops_graph, earliest_valid_route, stops, end_stop, avg_speed)
+            stops[earliest_valid_route.endStop.name] = update_value_and_parent_for_stop(stops_graph, earliest_valid_route, stops, end_stop)
             if (earliest_valid_route.endStop.name in stops_queue):
                 stops_queue[earliest_valid_route.endStop.name] = copy.copy(stops[earliest_valid_route.endStop.name])
 
@@ -94,35 +94,52 @@ def is_route_departure_time_valid(stops: dict, route: Route, start_time: datetim
 
     return route.departureTime >= curr_stop_arrival_time + timedelta(seconds=check_and_count_line_change_cost(stops, route))
 
+# check if there is about to be line change
+# and return the cost of change if line change happens
+def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
+    curr_stop = route.startStop.name
+    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
+    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
+        return 0.0 # there is no line change
+    return constants.COST_OF_THE_LINE_CHANGE # there is line change
+
 # counting new value to get from current to neighbour stop and assigning new parent if needed
-def update_value_and_parent_for_stop(stops_graph: dict, route: Route, stops: dict, end_stop: str, avg_speed: float) -> tuple:
+def update_value_and_parent_for_stop(stops_graph: dict, route: Route, stops: dict, end_stop: str) -> tuple:
     curr_stop = route.startStop.name
     neighbour_stop = route.endStop.name
     
     curr_stop_tup = stops.get(curr_stop)
     neigbour_stop_tup = stops.get(neighbour_stop)
+    if (neigbour_stop_tup is None):
+        print(f"ERROR NOT FOUND {neighbour_stop}")
+    
+    curr_stop_cost = curr_stop_tup[0] # d(u)
+    neighbour_stop_cost = neigbour_stop_tup[0] # d(v)
 
-    curr_stop_arrival_time = curr_stop_tup[0] # d(u)
-    neighbour_stop_arrival_time = neigbour_stop_tup[0] # d(v)
-
-    curr_to_neighbour_cost = count_waiting_and_route_journey_time_cost(stops_graph, stops, route, end_stop, avg_speed) # w(u,v) + HEURISTIC
-    new_arrival_time_cost = curr_stop_arrival_time + timedelta(seconds=curr_to_neighbour_cost)
+    curr_to_neighbour_cost = count_route_line_change_cost(stops_graph, stops, route, end_stop) # w(u,v) + heuristic
+    new_cost = curr_stop_cost + curr_to_neighbour_cost # d(u) + w(u,v) + heuristic
 
     # if new cost is lower than previous, change parent to current route and update cost, else return unchanged values
-    if (neighbour_stop_arrival_time > new_arrival_time_cost):
-        return (new_arrival_time_cost, route)
+    if (neighbour_stop_cost > new_cost):
+        return (new_cost, route)
     else:
         return neigbour_stop_tup
 
-# returns time in seconds from arrival to current stop (current stop cost)
-# to arrival to neighbour stop + HEURISTIC (waiting for route start time + route time + heuristic func value)
-def count_waiting_and_route_journey_time_cost(stops_graph: dict, stops: dict, route: Route, end_stop: str, avg_speed: float) -> float:
-    curr_stop = route.startStop.name
-    curr_stop_arrival_time: datetime = (stops.get(curr_stop))[0]
-    waiting_and_journey_cost = (route.arrivalTime - curr_stop_arrival_time).total_seconds()
-    return waiting_and_journey_cost + count_heuristic_in_seconds(stops_graph, route, end_stop, avg_speed)
 
-def count_heuristic_in_seconds(stops_graph: dict, route: Route, end_stop: str, avg_speed: float) -> float:
+# returns line change cost if current route requires line change + heuristic func value
+def count_route_line_change_cost(stops_graph: dict, stops: dict, route: Route, end_stop: str) -> float:
+    curr_stop = route.startStop.name
+    curr_stop_arrival_route: Route = stops[curr_stop][1]
+    # if arrival route to current stop is None, then it's start stop, so line change cost = 0.0
+    if (curr_stop_arrival_route is None):
+        return 0.0
+    if (curr_stop_arrival_route.line == route.line):
+        return 0.0 + count_heuristic(stops_graph, route, end_stop)
+    else:
+        return 1.0 + count_heuristic(stops_graph, route, end_stop)
+
+# heuristic function returning float value representing chance for line change
+def count_heuristic(stops_graph: dict, route: Route, end_stop: str) -> float:
     curr_stop = route.startStop.name
     neighbour_stop = route.endStop.name
 
@@ -136,8 +153,8 @@ def count_heuristic_in_seconds(stops_graph: dict, route: Route, end_stop: str, a
 
     angle = count_angle_between_stops(curr_stop_obj, neighbour_stop_obj, end_stop_obj) # [0, 180]
     dist_neighbour_end = neighbour_stop_obj.euclidean_dist(end_stop_obj)
-    estimated_time_neighbour_end = dist_neighbour_end / avg_speed
-    return (angle / 180.0) * estimated_time_neighbour_end
+    angle_importance_factor = count_angle_importance_factor_from_dist(dist_neighbour_end)
+    return (angle / 180.0) * angle_importance_factor
 
 
 def count_angle_between_stops(curr_stop_obj: Stop, neighbour_stop_obj: Stop, end_stop_obj: Stop) -> float:
@@ -156,15 +173,15 @@ def count_acb_angle_using_law_of_cosines(dist_a: float, dist_b: float, dist_c: f
         return acos(1.0) # 0 degrees
     return acos((pow(dist_a, 2) + pow(dist_b, 2) - pow(dist_c, 2)) / (2.0 * dist_a * dist_b))
 
-
-# check if there is about to be line change
-# and return the cost of change if line change happens
-def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
-    curr_stop = route.startStop.name
-    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
-    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
-        return 0.0 # there is no line change
-    return constants.COST_OF_THE_LINE_CHANGE # there is line change
+# if distance if bigger, then angle should matter less
+def count_angle_importance_factor_from_dist(neighbour_end_dist: float) -> float:
+    if (neighbour_end_dist < constants.SHORT_DIST):
+        return 1.0
+    if (neighbour_end_dist < constants.MID_DIST):
+        return 0.66
+    if (neighbour_end_dist < constants.LONG_DIST):
+        return 0.33
+    return 0.0
 
 
 # after getting through a-star algorithm find the optimal path from end stop to start stop
@@ -182,7 +199,8 @@ def find_optimal_path_in_stops(stops: dict, end_stop: str) -> list:
 
 # count optimal path's total journey time
 def count_optimal_journey_total_time(stops: dict, start_time: datetime, end_stop: str) -> str:
-    end_stop_arrival_time: datetime = stops.get(end_stop)[0]
+    end_route: Route = stops.get(end_stop)[1]
+    end_stop_arrival_time = end_route.arrivalTime
     delta = end_stop_arrival_time - start_time
     
     hours, remainder = divmod(delta.seconds, 3600)

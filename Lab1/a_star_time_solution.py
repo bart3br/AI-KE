@@ -128,7 +128,6 @@ def count_heuristic_in_seconds(stops_graph: dict, route: Route, end_stop: str, a
     curr_neighbour_random_route = ((stops_graph[curr_stop]).get(neighbour_stop))[0]
     end_any_random_route = (next(iter((stops_graph[end_stop]).values())))[0]
     
-    
     curr_stop_obj = curr_neighbour_random_route.startStop
     neighbour_stop_obj = curr_neighbour_random_route.endStop
     end_stop_obj = end_any_random_route.startStop

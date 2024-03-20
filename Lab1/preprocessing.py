@@ -72,6 +72,9 @@ def add_route_to_stops_graph(stops_graph: dict, route: Route) -> None:
             connections[neighbour_stop] = [route]
     else:
         stops_graph[curr_stop] = {neighbour_stop: [route]}
+    
+    if neighbour_stop not in stops_graph:
+        stops_graph[neighbour_stop] = {}
 
 
 # count average speed of all vehicles considering every route
