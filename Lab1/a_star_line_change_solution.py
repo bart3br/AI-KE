@@ -4,10 +4,11 @@ import copy
 import constants
 from math import acos, pi
 
-def a_star_time_factor_algorithm(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime, avg_speed: float) -> tuple:
+
+def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime, avg_speed: float) -> tuple:
     # set of all graph nodes (stops)
-    # with key=stopName, value=tuple(cost (earliest known arrival time + heuristic), route from parent)
-    stops = create_stops_dictionary(stops_graph, start_stop, start_time)
+    # with key=stopName, value=tuple(cost (number of line changes + heuristic), route from parent)
+    stops = create_stops_dictionary(stops_graph, start_stop)
     
     # 'Q' set of graph nodes (stops) used for algorithm to choose current minimal cost nodes
     stops_queue = copy.deepcopy(stops)
@@ -26,46 +27,21 @@ def a_star_time_factor_algorithm(stops_graph: dict, start_stop: str, end_stop: s
                 
     return finish_search(stops, end_stop, start_time)
 
-
-# def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime) -> tuple:
-#     avg_speed = count_avg_speed_of_all_routes(stops_graph)
-#     # set of all graph nodes (stops)
-#     # with key=stopName, value=tuple(cost (number of line changes + heuristic), route from parent)
-#     stops = create_stops_dictionary(stops_graph, start_stop, start_time)
-    
-#     # 'Q' set of graph nodes (stops) used for algorithm to choose current minimal cost nodes
-#     stops_queue = copy.deepcopy(stops)
-    
-#     #while stops (Q) not empty
-#     while stops_queue:
-#         # find stop with min value from stops queue
-#         curr_stop = find_min_value_stop_key(stops_queue, start_time)
-#         #if current stop is end stop, then optimal path has been found, end algorithm
-#         if (curr_stop == end_stop):
-#             return finish_search(stops, end_stop, start_time)
-        
-#         find_and_update_stop_neighbours(stops_graph, stops, stops_queue, curr_stop, start_time, end_stop)
-#         # delete current stop from stops
-#         stops_queue.pop(curr_stop)
-                
-#     return finish_search(stops, end_stop, start_time)
-
-
-
 # find optimal path and count total journey time
+# TODO zmienic nazwy zmiennych i dzialanie wywolywanych metod, musi liczyc przesiadki
 def finish_search(stops, end_stop, start_time):
     journey = find_optimal_path_in_stops(stops, end_stop)
     journey_total_time = count_optimal_journey_total_time(stops, start_time, end_stop)   
     return (journey, journey_total_time)
 
 # create stops dictionary to store arrival times and routes to parents stops
-def create_stops_dictionary(stops_graph: dict, start_stop: str, start_time: datetime) -> dict:
+def create_stops_dictionary(stops_graph: dict, start_stop: str) -> dict:
     stops = {}
-    max_datetime = start_time.replace(year= start_time.year+1)
+    max_line_changes = len(stops_graph) * 2
     for stop_name in stops_graph.keys():
-        stops[stop_name] = (max_datetime, None)
+        stops[stop_name] = (max_line_changes, None)
     
-    stops[start_stop] = (start_time, None)
+    stops[start_stop] = (0, None)
     return stops
 
 # find candidate for next current stop

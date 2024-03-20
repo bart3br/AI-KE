@@ -6,7 +6,7 @@ import time
 from preprocessing import preprocess
 import cli_input
 from dijkstra_time_solution import dijkstra_time_factor_algorithm
-from a_star_solution import a_star_time_factor_algorithm
+from a_star_time_solution import a_star_time_factor_algorithm
 import constants
 
 if __name__ == "__main__":
