@@ -93,6 +93,15 @@ def is_route_departure_time_valid(stops: dict, route: Route, start_time: datetim
 
     return route.departureTime >= curr_stop_arrival_time + timedelta(seconds=check_and_count_line_change_cost(stops, route))
 
+# check if there is about to be line change
+# and return the cost of change if line change happens
+def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
+    curr_stop = route.startStop.name
+    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
+    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
+        return 0.0 # there is no line change
+    return constants.COST_OF_THE_LINE_CHANGE # there is line change
+
 # counting new value to get from current to neighbour stop and assigning new parent if needed
 def update_value_and_parent_for_stop(stops_graph: dict, route: Route, stops: dict, end_stop: str, avg_speed: float) -> tuple:
     curr_stop = route.startStop.name
@@ -153,16 +162,6 @@ def count_acb_angle_using_law_of_cosines(dist_a: float, dist_b: float, dist_c: f
     if (dist_a + dist_c == dist_b or dist_b + dist_c == dist_a):
         return acos(1.0) # 0 degrees
     return acos((pow(dist_a, 2) + pow(dist_b, 2) - pow(dist_c, 2)) / (2.0 * dist_a * dist_b))
-
-
-# check if there is about to be line change
-# and return the cost of change if line change happens
-def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
-    curr_stop = route.startStop.name
-    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
-    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
-        return 0.0 # there is no line change
-    return constants.COST_OF_THE_LINE_CHANGE # there is line change
 
 
 # after getting through a-star algorithm find the optimal path from end stop to start stop

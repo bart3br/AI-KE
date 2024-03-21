@@ -28,7 +28,6 @@ def a_star_line_change_factor_algorithm(stops_graph: dict, start_stop: str, end_
     return finish_search(stops, end_stop, start_time)
 
 # find optimal path and count total journey time
-# TODO zmienic nazwy zmiennych i dzialanie wywolywanych metod, musi liczyc przesiadki
 def finish_search(stops, end_stop, start_time):
     journey = find_optimal_path_in_stops(stops, end_stop)
     journey_line_changes = count_optimal_journey_total_time(stops, start_time, end_stop)   
@@ -110,8 +109,6 @@ def update_value_and_parent_for_stop(stops_graph: dict, route: Route, stops: dic
     
     curr_stop_tup = stops.get(curr_stop)
     neigbour_stop_tup = stops.get(neighbour_stop)
-    if (neigbour_stop_tup is None):
-        print(f"ERROR NOT FOUND {neighbour_stop}")
     
     curr_stop_cost = curr_stop_tup[0] # d(u)
     neighbour_stop_cost = neigbour_stop_tup[0] # d(v)

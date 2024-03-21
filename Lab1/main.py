@@ -33,29 +33,41 @@ def run_dijkstra(stops_graph: dict, start_stop: str, end_stop: str, start_time: 
     time1 = time.time()
     solution = dijkstra_time_factor_algorithm(stops_graph, start_stop, end_stop, start_time)
     time2 = time.time()
-    for route in solution[0]:
-        print(route)
-    print(f"Total journey time: {solution[1]}")
-    print(f"Route calculation time: {int((time2 - time1) * 1000)} ms")
+    print_journey_info(solution[0], solution[1], time1, time2)
 
 def run_a_star_time(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime, avg_speed: float) -> None:
     print("\nA* algorithm with time factor solution")
     time1 = time.time()
     solution = a_star_time_factor_algorithm(stops_graph, start_stop, end_stop, start_time, avg_speed)
     time2 = time.time()
-    for route in solution[0]:
-        print(route)
-    print(f"Total journey time: {solution[1]}")
-    print(f"Route calculation time: {int((time2 - time1) * 1000)} ms")
+    print_journey_info(solution[0], solution[1], time1, time2)
 
 def run_a_star_line_change(stops_graph: dict, start_stop: str, end_stop: str, start_time: datetime) -> None:
     print("\nA* algorithm with line change factor solution")
     time1 = time.time()
     solution = a_star_line_change_factor_algorithm(stops_graph, start_stop, end_stop, start_time)
     time2 = time.time()
-    for route in solution[0]:
-        print(route)
-    print(f"Total journey time: {solution[1]}")
+    print_journey_info(solution[0], solution[1], time1, time2)
+
+
+def print_journey_info(route_list: list, total_journey_time: str, time1: float, time2: float) -> None:
+    route_list = list(route_list)
+    prev = None
+    curr = None
+    line_change_counter = 0
+    for i, route in enumerate(route_list):
+        prev = curr
+        curr = route
+        if (prev is None):
+            print(curr.str_first_half(), end="")
+        elif (prev.line != curr.line or prev.arrivalTime != curr.departureTime):
+            print(prev.str_second_half())
+            print(curr.str_first_half(), end="")
+            line_change_counter += 1
+        if (i == len(route_list) - 1):
+            print(curr.str_second_half())
+    print(f"Total journey time: {total_journey_time}")
+    print(f"Number of line changes: {line_change_counter}")
     print(f"Route calculation time: {int((time2 - time1) * 1000)} ms")
 
 

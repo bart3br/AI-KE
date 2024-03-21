@@ -30,6 +30,12 @@ class Route:
     def __str__(self):
         return f"Line {self.line}, from {self.startStop.name} at {self.departureTime}, to {self.endStop.name} at {self.arrivalTime}"
     
+    def str_first_half(self):
+        return f"Line {self.line}, from {self.startStop.name} at {self.departureTime}, "
+    
+    def str_second_half(self):
+        return f"to {self.endStop.name} at {self.arrivalTime}"
+    
     def journey_time_seconds(self) -> float:
         return abs((self.arrivalTime - self.departureTime).total_seconds())
     

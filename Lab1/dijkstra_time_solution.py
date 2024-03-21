@@ -92,6 +92,15 @@ def is_route_departure_time_valid(stops: dict, route: Route, start_time: datetim
 
     return route.departureTime >= curr_stop_arrival_time + timedelta(seconds=check_and_count_line_change_cost(stops, route))
 
+# check if there is about to be line change
+# and return the cost of change if line change happens
+def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
+    curr_stop = route.startStop.name
+    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
+    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
+        return 0.0 # there is no line change
+    return constants.COST_OF_THE_LINE_CHANGE # there is line change
+
 # counting new value to get from current to neighbour stop and assigning new parent if needed
 def update_value_and_parent_for_stop(route: Route, stops: dict) -> tuple:
     curr_stop = route.startStop.name
@@ -117,15 +126,6 @@ def count_waiting_and_route_journey_time_cost(stops: dict, route: Route) -> floa
     curr_stop = route.startStop.name
     curr_stop_arrival_time: datetime = (stops.get(curr_stop))[0]
     return (route.arrivalTime - curr_stop_arrival_time).total_seconds()
-
-# check if there is about to be line change
-# and return the cost of change if line change happens
-def check_and_count_line_change_cost(stops: dict, route: Route) -> float:
-    curr_stop = route.startStop.name
-    route_to_curr_stop: Route = (stops.get(curr_stop))[1]
-    if route_to_curr_stop is None or route_to_curr_stop.line == route.line:
-        return 0.0 # there is no line change
-    return constants.COST_OF_THE_LINE_CHANGE # there is line change
     
     
 
