@@ -26,6 +26,14 @@ class Game:
     
     def set_cell_val(self, x: int, y: int, value: int) -> None:
         self.board[x][y].symbol = value
+        
+    def switch_cells_vals(self, x1: int, y1: int, x2: int, y2: int) -> None:
+        self.board[x1][y1].symbol, self.board[x2][y2].symbol = self.board[x2][y2].symbol, self.board[x1][y1].symbol
+        
+    def make_a_move(self, player_num: int, pos_x: int, pos_y: int, target_pos_x: int, target_pos_y: int) -> None:
+        self.switch_cells_vals(pos_x, pos_y, target_pos_x, target_pos_y)
+        self.turn += 1
+        # check for winner
                        
         
 class Cell:
