@@ -1,11 +1,12 @@
+from constants import EMPTY_CELL_VALUE
+
 class Game:
-    def __init__(self, game_state: list, num_of_players: int, num_of_player_pawns: int) -> None:
+    def __init__(self, game_state: list) -> None:
         self.board = []
         self.__init_board(game_state)
         self.turn = 1
         self.winner = 0
-        self.num_of_players = num_of_players
-        self.num_of_player_pawns = num_of_player_pawns
+        self.BOARD_SIZE = len(self.board)
         
     def __init_board(self, game_state: list) -> None:
         for i in range(len(game_state)):
@@ -30,7 +31,11 @@ class Game:
     def switch_cells_vals(self, x1: int, y1: int, x2: int, y2: int) -> None:
         self.board[x1][y1].symbol, self.board[x2][y2].symbol = self.board[x2][y2].symbol, self.board[x1][y1].symbol
         
-    def make_a_move(self, player_num: int, pos_x: int, pos_y: int, target_pos_x: int, target_pos_y: int) -> None:
+    def move_pawn(self, player_num: int, pos_x: int, pos_y: int, target_pos_x: int, target_pos_y: int) -> None:
+        if (self.get_cell_val(pos_x, pos_y) != player_num):
+            raise ValueError('Trying to move other players pawn')
+        if (self.get_cell_val(target_pos_x, target_pos_y) != EMPTY_CELL_VALUE):
+            raise ValueError('Cell is already occupied by other pawn')
         self.switch_cells_vals(pos_x, pos_y, target_pos_x, target_pos_y)
         self.turn += 1
         # check for winner

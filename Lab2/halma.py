@@ -1,10 +1,10 @@
-from classes import Game
+from game import Game
 from constants import POSSIBLE_PAWN_MOVES, POSSIBLE_PAWN_JUMPS, EMPTY_CELL_VALUE
     
 def generate_possible_player_moves(game: Game, player_num: int) -> list[tuple]:
     return [(x, y, move)
-            for x in range(len(game.board))
-            for y in range(len(game.board[0]))
+            for x in range(game.BOARD_SIZE)
+            for y in range(game.BOARD_SIZE)
             if (game.get_cell_val(x, y) == player_num)
             for move in generate_possible_pawn_moves(game, x, y)]
                 
@@ -61,7 +61,7 @@ def is_direct_pawn_move_possible(game: Game, pos_x: int, pos_y: int, target_pos_
 def is_position_inside_board(game: Game, pos_x: int, pos_y: int):
     if (pos_x < 0 or pos_y < 0):
         return False
-    if (pos_x >= len(game.board) or pos_y >= len(game.board[0])):
+    if (pos_x >= game.BOARD_SIZE or pos_y >= game.BOARD_SIZE):
         return False
     return True
 
