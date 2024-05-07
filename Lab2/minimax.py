@@ -60,11 +60,14 @@ def minimax2(game: Game, depth: int, player_num: int, maximize: bool, evaluate_f
     
     possible_moves = generate_possible_player_moves(game, player_num)
     best_value = -float('inf') if maximize else float('inf')
+    
+    next_player_num = 1 if player_num == 2 else 2
+    
     for move in possible_moves:
         game_after_move = copy.deepcopy(game)
         game_after_move.move_pawn(player_num, move[0], move[1], move[2][0], move[2][1])
         
-        value, _ = minimax2(game_after_move, depth - 1, player_num, not maximize, evaluate_func)
+        value, _ = minimax2(game_after_move, depth - 1, next_player_num, not maximize, evaluate_func)
         if (maximize):
             if (best_value < value):
                 best_value = value

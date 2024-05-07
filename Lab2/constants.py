@@ -1,5 +1,7 @@
 INITIAL_GAME_STATE_FILENAME = "initial_game_state.txt"
 EMPTY_CELL_VALUE = 0
+PLAYER1_VALUE = 1
+PLAYER2_VALUE = 2
 POSSIBLE_PAWN_MOVES = [(-1, -1), (-1, 0), (-1, 1), 
                        (0, -1), (0, 1),
                        (1, -1), (1, 0), (1, 1)]

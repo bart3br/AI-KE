@@ -2,8 +2,13 @@ import math
 from game import Game
 from constants import MAX_NUMBER_OF_POSSIBLE_MOVES
 from halma import generate_possible_player_moves
+from random import random
 
-class Heuristics: 
+class Heuristics:
+    @staticmethod
+    def strat_random(game: Game, player_num: int) -> float:
+        return random()
+         
     @staticmethod
     # heuristic taking average player's pawns distance from enemy board corner as factor
     # the lower the average distance, the higher heuristic value
