@@ -7,10 +7,11 @@ class Heuristics:
     @staticmethod
     # heuristic taking average player's pawns distance from enemy board corner as factor
     # the lower the average distance, the higher heuristic value
-    def strat_dist_from_enemy_corner(game: Game, player_num: int, enemy_corner_x: int, enemy_corner_y: int) -> float:
+    def strat_dist_from_enemy_corner(game: Game, player_num: int) -> float:
         MAX_DIST = euclidean_dist(0, 0, game.BOARD_SIZE, game.BOARD_SIZE)
+        ENEMY_CORNER = (0, 0) if player_num == 2 else (game.BOARD_SIZE-1, game.BOARD_SIZE-1)
         
-        avg_dist = count_avg_distance_from_point(game, player_num, enemy_corner_x, enemy_corner_y)
+        avg_dist = count_avg_distance_from_point(game, player_num, ENEMY_CORNER[0], ENEMY_CORNER[1])
         # dividing avg_dist by max_dist to get number from 0 to 1, as max_dist will always be bigger than avg_dist
         # returning 1.0 - avg_dist because the bigger the avg_dist from enemy corner, the smaller should heuristic value be
         avg_dist /= MAX_DIST

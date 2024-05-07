@@ -1,6 +1,14 @@
 from game import Game
 from constants import POSSIBLE_PAWN_MOVES, POSSIBLE_PAWN_JUMPS, EMPTY_CELL_VALUE
+from constants import PLAYER1_STARTING_CELLS, PLAYER2_STARTING_CELLS
     
+def is_player_win(game: Game, player_num: int) -> bool:
+    ENEMY_CORNER_CELLS = PLAYER1_STARTING_CELLS if player_num == 2 else PLAYER2_STARTING_CELLS
+    for position in ENEMY_CORNER_CELLS:
+        if (game.get_cell_val(position[0], position[1]) != player_num):
+            return False
+    return True
+
 def generate_possible_player_moves(game: Game, player_num: int) -> list[tuple]:
     return [(x, y, move)
             for x in range(game.BOARD_SIZE)

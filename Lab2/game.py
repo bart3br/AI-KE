@@ -1,3 +1,4 @@
+import copy
 from constants import EMPTY_CELL_VALUE
 
 class Game:
@@ -13,6 +14,13 @@ class Game:
             self.board.append([])
             for j in range(len(game_state[i])):
                 self.board[i].append(Cell(i, j, game_state[i][j]))
+                
+    # def __deepcopy__(self, memo):
+    #     new_instance = self.__class__(copy.deepcopy(self.board, memo))
+    #     new_instance.turn = self.turn
+    #     new_instance.winner = self.winner
+    #     new_instance.BOARD_SIZE = self.BOARD_SIZE
+    #     return new_instance
                 
     def __str__(self) -> str:
         board_str = f'turn={self.turn}, winner={self.winner}\n'
@@ -37,8 +45,7 @@ class Game:
         if (self.get_cell_val(target_pos_x, target_pos_y) != EMPTY_CELL_VALUE):
             raise ValueError('Cell is already occupied by other pawn')
         self.switch_cells_vals(pos_x, pos_y, target_pos_x, target_pos_y)
-        self.turn += 1
-        # check for winner
+        self.turn += 1        
                        
         
 class Cell:
@@ -48,7 +55,7 @@ class Cell:
         self.symbol = symbol
     
     def __str__(self) -> str:
-        return f'position({self.pos_x}, {self.pos_y}), symbol = {self.symbol}'
+        return f'{self.symbol}'
 
         
 if __name__ == "__main__":
