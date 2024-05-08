@@ -10,18 +10,19 @@ def is_player_win(game: Game, player_num: int) -> bool:
     return True
 
 def generate_possible_player_moves(game: Game, player_num: int) -> list[tuple]:
-    # return [(x, y, move)
-    #         for x in range(game.BOARD_SIZE)
-    #         for y in range(game.BOARD_SIZE)
-    #         if (game.get_cell_val(x, y) == player_num)
-    #         for move in generate_possible_pawn_moves(game, x, y)]
-    if (player_num == 1):
-        return [(x, y, move)
-                for (x, y) in game.player1_pawns
-                for move in generate_possible_pawn_moves(game, x, y)]
     return [(x, y, move)
-            for (x, y) in game.player2_pawns
+            for x in range(game.BOARD_SIZE)
+            for y in range(game.BOARD_SIZE)
+            if (game.get_cell_val(x, y) == player_num)
             for move in generate_possible_pawn_moves(game, x, y)]
+    # if (player_num == 1):
+    #     return [(x, y, move)
+    #             for (x, y) in game.player1_pawns
+    #             for move in generate_possible_pawn_moves(game, x, y)]
+    # else:
+    #     return [(x, y, move)
+    #             for (x, y) in game.player2_pawns
+    #             for move in generate_possible_pawn_moves(game, x, y)]
                 
 
 def generate_possible_pawn_moves(game: Game, pos_x: int, pos_y: int) -> list[tuple]:
