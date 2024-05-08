@@ -20,13 +20,7 @@ class Game:
                     self.player1_pawns.append((i, j))
                 elif (game_state[i][j] == PLAYER2_VALUE):
                     self.player2_pawns.append((i, j))
-                
-    # def __deepcopy__(self, memo):
-    #     new_instance = self.__class__(copy.deepcopy(self.board, memo))
-    #     new_instance.turn = self.turn
-    #     new_instance.winner = self.winner
-    #     new_instance.BOARD_SIZE = self.BOARD_SIZE
-    #     return new_instance
+                    
                 
     def __str__(self) -> str:
         board_str = f'turn={self.turn}, winner={self.winner}\n'
@@ -61,8 +55,12 @@ class Game:
             raise ValueError('Cell is already occupied by other pawn')
         self.__switch_cells_vals(pos_x, pos_y, target_pos_x, target_pos_y)
         self.__change_pawn_position_info(player_num, (pos_x, pos_y), (target_pos_x, target_pos_y))
-        self.turn += 1        
-                       
+        self.turn = 2 if self.turn == 1 else 1
+        
+    def move_pawn_reverse(self, player_num: int, pos_x: int, pos_y: int, target_pos_x: int, target_pos_y: int) -> None:
+        self.__switch_cells_vals(target_pos_x, target_pos_y, pos_x, pos_y)
+        self.__change_pawn_position_info(player_num, (target_pos_x, target_pos_y), (pos_x, pos_y))
+        self.turn = 2 if self.turn == 1 else 1             
         
 class Cell:
     def __init__(self, pos_x: int, pos_y: int, symbol: int) -> None:
