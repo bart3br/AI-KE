@@ -23,13 +23,28 @@ class Game:
                     
                 
     def __str__(self) -> str:
-        board_str = f'turn={self.turn}, winner={self.winner}\n'
+        board_str = f'player_turn={self.turn}, winner={self.winner}\n'
         for line in self.board:
             for cell in line:
                 # board_str += str(cell.symbol) + ' '
                 board_str += str(cell) + ' '
             board_str += '\n'
         return board_str
+    
+    def print_colorful_board(self) -> None:
+        for line in self.board:
+            for cell in line:
+                if cell == 0:
+                    # print empty cell with default color
+                    print("0", end=" ")
+                elif cell == 1:
+                    # print 1st player's pawns with blue color
+                    print("\033[94m1\033[0m", end=" ")
+                elif cell == 2:
+                    # print 2nd player's pawns with red color
+                    print("\033[91m2\033[0m", end=" ")
+            print()
+        print()
     
     def get_cell_val(self, x: int, y: int) -> int:
         # return self.board[x][y].symbol
@@ -64,7 +79,10 @@ class Game:
     def move_pawn_reverse(self, player_num: int, pos_x: int, pos_y: int, target_pos_x: int, target_pos_y: int) -> None:
         self.__switch_cells_vals(target_pos_x, target_pos_y, pos_x, pos_y)
         # self.__change_pawn_position_info(player_num, (target_pos_x, target_pos_y), (pos_x, pos_y))
-        self.turn = 2 if self.turn == 1 else 1             
+        self.turn = 2 if self.turn == 1 else 1
+
+    def check_for_winner(self, win_check_func) -> None:
+        self.winner = win_check_func(self)             
         
 # class Cell:
 #     def __init__(self, pos_x: int, pos_y: int, symbol: int) -> None:

@@ -9,6 +9,13 @@ def is_player_win(game: Game, player_num: int) -> bool:
             return False
     return True
 
+def check_for_winner(game: Game) -> int:
+    if (is_player_win(game, 1)):
+        return 1
+    elif (is_player_win(game, 2)):
+        return 2
+    return 0
+
 def generate_possible_player_moves(game: Game, player_num: int) -> list[tuple]:
     return [(x, y, move)
             for x in range(game.BOARD_SIZE)

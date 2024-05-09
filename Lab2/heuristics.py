@@ -38,8 +38,9 @@ class Heuristics:
     # the higher the number of possible moves, the higher heuristic value
     def strat_number_of_possible_moves(game: Game, player_num: int) -> float:
         possible_moves_count = len(generate_possible_player_moves(game, player_num))
-        possible_moves_count /= MAX_NUMBER_OF_POSSIBLE_MOVES
-        return possible_moves_count if possible_moves_count < 1.0 else 1.0
+        if (possible_moves_count > MAX_NUMBER_OF_POSSIBLE_MOVES):
+            return 1.0
+        return possible_moves_count / MAX_NUMBER_OF_POSSIBLE_MOVES
 
     @staticmethod
     # heuristic taking average player's pawns distance from furthest player's pawn as factor
@@ -99,6 +100,10 @@ class Heuristics:
         avg_dist /= player_pawn_count
         avg_dist /= MAX_DIST
         return 1.0 - avg_dist
+    
+    @staticmethod
+    def strat_end_game_weights(game: Game, player_num: int) -> float:
+        pass
 
 
 def euclidean_dist(x1: float, y1: float, x2: float, y2: float) -> float:
