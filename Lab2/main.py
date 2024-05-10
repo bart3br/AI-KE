@@ -4,7 +4,6 @@ from game import Game
 import tests
 from minimax import minimax_alpha_beta_puring
 from halma import check_for_winner
-from time import time
 
 
 def run_tests():
