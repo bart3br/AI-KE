@@ -6,3 +6,6 @@ __pycache__/
 
 # Ignore .pdf files
 *.pdf
+
+# Ignore venv folders and files
+*.venv
