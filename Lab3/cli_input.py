@@ -1,5 +1,6 @@
 PROMPT_WIDTH = 34
 FIELDS = ['power', 'heating', 'start_button', 'display', 'lighting']
+SEPARATOR = '-' * 100
 
 def single_user_input(field_name: str, 
                       positive_answer: str, 
@@ -33,6 +34,13 @@ def user_input() -> dict:
 def display_user_input(facts: dict):
     for key, value in facts.items():
         print(f"{key} with status {value}")
+        
+def display_messages(engine_messages: dict):
+    for component, messages in engine_messages.items():
+        print(SEPARATOR)
+        print(f"{component.capitalize()}:")
+        for message in messages:
+            print(f" - {message}")
 
 if __name__ == "__main__":
     pass

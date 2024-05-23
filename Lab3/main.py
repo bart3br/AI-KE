@@ -1,4 +1,4 @@
-from cli_input import user_input, display_user_input
+from cli_input import user_input, display_user_input, display_messages
 from facts_and_rules import MicrowaveExpertSystem, ProblemFact
 
 def diagnose_microwave_issues(facts: dict):
@@ -7,9 +7,11 @@ def diagnose_microwave_issues(facts: dict):
     for field, status in facts.items():
         system.declare(ProblemFact(**{field: status}))
     system.run()
+    display_messages(system.messages)
     
 
 if __name__ == "__main__":
     microwave_status = user_input()
     # display_user_input(microwave_status)
     diagnose_microwave_issues(microwave_status)
+    
