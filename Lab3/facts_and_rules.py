@@ -56,7 +56,7 @@ class MicrowaveExpertSystem(KnowledgeEngine):
                          "If the microwave still doesn't turn on the heating, contact authorized service center")
     
     # display off rules 
-    @Rule(NOT(ProblemFact(description= "power off")),
+    @Rule(ProblemFact(power= "on"),
           ProblemFact(display= "off"))
     def display_off_power_on_solution(self):
         self.declare(ProblemFact(description= "display off"))
@@ -66,7 +66,7 @@ class MicrowaveExpertSystem(KnowledgeEngine):
                          "If the display is still off, contact authorized service center")
     
     # lighting off rules
-    @Rule(NOT(ProblemFact(description= "power off")),
+    @Rule(ProblemFact(power= "on"),
           ProblemFact(lighting= "off"))
     def lighting_off_problem(self):
         self.declare(ProblemFact(description= "lighting off"))
