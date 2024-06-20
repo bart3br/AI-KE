@@ -9,3 +9,6 @@ __pycache__/
 
 # Ignore venv folders and files
 *.venv
+
+# Ignore Lab4/data/t-shirts.csv
+Lab4/data/t-shirts.csv
