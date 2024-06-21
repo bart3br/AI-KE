@@ -12,3 +12,6 @@ __pycache__/
 
 # Ignore Lab4/data/t-shirts.csv
 Lab4/data/t-shirts.csv
+
+# Ignore html ydata profiling report
+Lab4/data/t-shirts_profile_report.html
