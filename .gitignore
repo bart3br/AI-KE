@@ -9,9 +9,22 @@ __pycache__/
 
 # Ignore venv folders and files
 *.venv
+*venv
 
 # Ignore Lab4/data/t-shirts.csv
 Lab4/data/t-shirts.csv
 
 # Ignore html ydata profiling report
 Lab4/data/t-shirts_profile_report.html
+
+# Ignore .gz
+*.gz
+
+# Ignore .bin
+*.bin
+
+# Ignore poetry.lock
+poetry.lock
+
+# Ignore .toml file
+*.toml
