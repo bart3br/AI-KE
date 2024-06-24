@@ -28,3 +28,6 @@ poetry.lock
 
 # Ignore .toml file
 *.toml
+
+# Ignore Lab5/data
+Lab5/data
